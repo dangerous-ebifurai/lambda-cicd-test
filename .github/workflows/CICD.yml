@@ -14,7 +14,7 @@ jobs:
   test_and_build:
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: myapp
+      IMAGE_NAME: testapp
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
