@@ -17,7 +17,7 @@ jobs:
       ECR_REPOSITORY: testapp
     strategy:
       matrix:
-        service: ["app", "worker", "api"]  # 各サービスごとに Dockerfile を用意
+        service: ["app"]  # 各サービスごとに Dockerfile を用意
     steps:
       # リポジトリをチェックアウト
       - name: Checkout repository
