@@ -27,7 +27,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.11"
+
+      - name: cd ${matrix.service}
+        run: cd ./${{ matrix.service }}
+        shell: bash
 
       - name: Install dependencies
         run: pip install -r requirements.txt
@@ -49,8 +53,9 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6        
         with:
-          context: ./${{ matrix.service }}  # 各サービスごとのディレクトリ
-          file: ./${{ matrix.service }}/Dockerfile  # 各 Dockerfile を指定
+          # context: ./${{ matrix.service }}  # 各サービスごとのディレクトリ
+          # file: ./${{ matrix.service }}/Dockerfile  # 各 Dockerfile を指定
+          file: ./Dockerfile  # 各 Dockerfile を指定
           push: true
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}/${{ matrix.service }}:latest
