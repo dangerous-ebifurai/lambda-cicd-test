@@ -15,9 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: testapp
-      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
     steps:
       # リポジトリをチェックアウト
@@ -40,19 +37,19 @@ jobs:
       - name: Configure AWS Credential
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: $AWS_ROLE_ARN
-          aws-region: $AWS_REGION
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       # Dockerイメージをビルド
       - name: Build Docker Image
-        run: docker build -t $IMAGE_NAME:latest -f Dockerfile .
+        run: docker build -t ${{ env.IMAGE_NAME }}:latest -f Dockerfile .
 
       # ECRへプッシュ
       - name: Login to Amazon ECR
         run: |
-          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
       - name: Tag and Push Image
         run: |
-          docker tag $IMAGE_NAME:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:latest
-          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:latest
+          docker tag ${{ env.IMAGE_NAME }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.IMAGE_NAME }}:latest
