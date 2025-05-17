@@ -14,8 +14,10 @@ jobs:
   test_and_build:
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: testapp
-
+      ECR_REPOSITORY: testapp
+    strategy:
+      matrix:
+        service: ["app", "worker", "api"]  # 各サービスごとに Dockerfile を用意
     steps:
       # リポジトリをチェックアウト
       - name: Checkout repository
@@ -31,7 +33,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run pytest
-        run: python -m pytest tests/
+        run: python -m pytest
 
       # AWS OIDC認証を使用してECRにログイン
       - name: Configure AWS Credential
@@ -40,16 +42,15 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Dockerイメージをビルド
-      - name: Build Docker Image
-        run: docker build -t ${{ env.IMAGE_NAME }}:latest -f Dockerfile .
+      - name: Login to Amazon ECR Private
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-      # ECRへプッシュ
-      - name: Login to Amazon ECR
-        run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-
-      - name: Tag and Push Image
-        run: |
-          docker tag ${{ env.IMAGE_NAME }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.IMAGE_NAME }}:latest
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.IMAGE_NAME }}:latest
+      - name: Build and push
+        uses: docker/build-push-action@v6        
+        with:
+          context: ./${{ matrix.service }}  # 各サービスごとのディレクトリ
+          file: ./${{ matrix.service }}/Dockerfile  # 各 Dockerfile を指定
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}/${{ matrix.service }}:latest
