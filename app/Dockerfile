@@ -12,7 +12,7 @@ COPY requirements.txt .
 RUN pip install --target . -r requirements.txt
 
 # Lambda ハンドラーのコードをコピー
-COPY app.py ./
+COPY index.py ./
 
 # Lambda の起動コマンド
-CMD ["app.lambda_handler"]
+CMD ["index.lambda_handler"]
