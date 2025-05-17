@@ -1,12 +1,12 @@
-version: '3.8'
+import json
 
-services:
-  lambda:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "9000:8080"
-    environment:
-      - AWS_LAMBDA_RUNTIME_API=http://localhost:9000
-    command: ["app.lambda_handler"]
+def lambda_handler(event, context):
+    """Lambda のエントリーポイント"""
+    response = {
+        "statusCode": 200,
+        "body": json.dumps({
+            "message": "Hello from Lambda!",
+            "input": event
+        })
+    }
+    return response
