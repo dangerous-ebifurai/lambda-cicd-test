@@ -29,15 +29,15 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: cd ${matrix.service}
-        run: cd ./${{ matrix.service }}
+      - name: cd ${matrix.service} and test
+        run: | 
+          cd ./${{ matrix.service }}
+          echo "Current directory: $(pwd)"
+          echo "Files in directory:"
+          ls -al
+          pip install -r requirements.txt
+          python -m pytest ./tests/
         shell: bash
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Run pytest
-        run: python -m pytest
 
       # AWS OIDC認証を使用してECRにログイン
       - name: Configure AWS Credential
@@ -53,9 +53,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6        
         with:
-          # context: ./${{ matrix.service }}  # 各サービスごとのディレクトリ
-          # file: ./${{ matrix.service }}/Dockerfile  # 各 Dockerfile を指定
-          file: ./Dockerfile  # 各 Dockerfile を指定
+          context: ./${{ matrix.service }}  # 各サービスごとのディレクトリ
+          file: ./${{ matrix.service }}/Dockerfile  # 各 Dockerfile を指定
           push: true
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}/${{ matrix.service }}:latest
