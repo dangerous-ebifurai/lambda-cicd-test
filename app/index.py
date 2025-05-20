@@ -1,7 +1,10 @@
 import json
 
 def lambda_handler(event, context):
-    """Lambda のエントリーポイント"""
+
+    print("Event: ", event["body"])
+    print("Event: ", event["headers"])
+
     response = {
         "statusCode": 200,
         "body": json.dumps({
