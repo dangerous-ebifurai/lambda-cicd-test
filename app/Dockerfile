@@ -1,18 +1,19 @@
-# AWS LambdaのPython3.11ベースイメージ
-FROM public.ecr.aws/lambda/python:3.11
+# Python 3.11 base image for ECS Fargate
+FROM python:3.11-slim
 
-# 必要なパッケージをインストール
-RUN yum install -y zip
+# Set working directory
+WORKDIR /app
 
-# 作業ディレクトリを設定
-WORKDIR /var/task
-
-# 依存関係のインストール
+# Install dependencies
 COPY requirements.txt .
-RUN pip install --target . -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Lambda ハンドラーのコードをコピー
-COPY index.py ./
+# Copy application code
+COPY . .
 
-# Lambda の起動コマンド
-CMD ["index.lambda_handler"]
+# Environment variables and port exposure
+ENV PORT=8501
+EXPOSE 8501
+
+# Start Streamlit app
+CMD ["streamlit", "run", "index.py", "--server.port=8501", "--server.address=0.0.0.0"]
